@@ -10,11 +10,13 @@ namespace ConsoleChat.UI
     {
         private readonly IAuthService? _authService;
         private readonly IUserService? _userService;
+        private readonly IMessageService _messageService;
 
-        public ConsoleMenu(IAuthService authService, IUserService userService)
+        public ConsoleMenu(IAuthService authService, IUserService userService, IMessageService messageService)
         {
             _authService = authService;
             _userService = userService;
+            _messageService = messageService;
         }
 
         public void RunMainMenu()
@@ -97,6 +99,9 @@ namespace ConsoleChat.UI
                     case "1":
                         HandleViewUsers();
                         break;
+                    case "2":
+                        HandleSendMessage();
+                        break;
                     case "0":
                         _authService?.Logout();
                         Console.WriteLine("\nLogged out successfully. Press any key...");
@@ -136,7 +141,6 @@ namespace ConsoleChat.UI
             Console.Write("\nChoose: ");
             Console.ReadLine();
         }
-
         private void HandlerRegister()
         {
             Console.Clear();
@@ -173,6 +177,51 @@ namespace ConsoleChat.UI
                 }
             }
             return password;
+        }
+        private void HandleSendMessage()
+        {
+            Console.Clear();
+            Console.WriteLine("========== SEND MESSAGE ==========\n");
+
+            var currentUser = _authService?.GetCurrentUser();
+            if (currentUser == null)
+                return;
+
+            var otherUsers = _userService?.GetAllUsers()
+                                            .Where(u => u.UserId != currentUser.UserId)
+                                            .ToList();
+
+            if (!otherUsers?.Any() ?? true)
+            {
+                Console.WriteLine("No other users available to send a message to.");
+                Console.WriteLine("\nPress any key to continue...");
+                Console.ReadKey();
+                return;
+            }
+
+            Console.WriteLine("Select recipient:\n");
+            for (int i = 0; i < otherUsers?.Count; i++)
+            {
+                Console.WriteLine($"{i + 1}. {otherUsers[i].Username}");
+            }
+
+            Console.Write("\nChoose recipient number (0 to cancel): ");
+            if (int.TryParse(Console.ReadLine(), out int choice) && choice > 0 && choice <= otherUsers?.Count)
+            {
+                var recipient = otherUsers[choice - 1];
+
+                Console.Write($"\nMessage to {recipient.Username}: ");
+                string content = Console.ReadLine() ?? string.Empty;
+
+                _messageService.SendMessage(currentUser.UserId, recipient.UserId, content);
+            }
+            else
+            {
+                Console.WriteLine("\nCancelled or invalid selection.");
+            }
+
+            Console.WriteLine("\nPress any key to continue...");
+            Console.ReadKey();
         }
     }
 }

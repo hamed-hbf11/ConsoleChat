@@ -21,12 +21,39 @@ namespace ConsoleChat.Services
 
         public bool Login(string username, string password)
         {
-            throw new NotImplementedException();
+            if(string.IsNullOrWhiteSpace(username) || string.IsNullOrWhiteSpace(password))
+            {
+                Console.WriteLine("Username and Password cannot be empty.");
+                return false;
+            }
+            var user = _users?.FirstOrDefault(u=> u.Username.Equals(username, StringComparison.OrdinalIgnoreCase));
+            if(user == null)
+            {
+                Console.WriteLine("Invalid username or password.");
+                return false;
+            }
+            string hashedPassword = HashPassword(password, user.PasswordSalt);
+            if(user.PasswordHash != hashedPassword)
+            {
+                Console.WriteLine("Invalid username or password.");
+                return false;
+            }
+            _currentUser = user;
+            _currentUser.IsOnline = true;
+            _currentUser.LastSeen = DateTime.Now;
+
+            Console.WriteLine($"Welcome back, {user.Username}!");
+            return true;
         }
 
         public void Logout()
         {
-            _currentUser = null;
+            if(_currentUser != null)
+            {
+                _currentUser.IsOnline = false;
+                _currentUser.LastSeen = DateTime.Now;
+                _currentUser = null;
+            }
         }
 
         public bool Register(string username, string password)

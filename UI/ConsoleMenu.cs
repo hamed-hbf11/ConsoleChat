@@ -22,6 +22,7 @@ namespace ConsoleChat.UI
                 Console.Clear();
                 Console.WriteLine("========== CONSOLE CHAT ==========\n");
                 Console.WriteLine("1. Register");
+                Console.WriteLine("2. Login");
                 Console.WriteLine("0. Exit");
                 Console.Write("Choose: ");
 
@@ -32,11 +33,72 @@ namespace ConsoleChat.UI
                     case "1":
                         HandlerRegister();
                         break;
+                    case "2":
+                        HandleLogin();
+                        break;
                     case "0":
                         Console.WriteLine("Goodbye!");
                         return;
                     default:
                         Console.WriteLine("Invalid option. Press any key...");
+                        Console.ReadKey();
+                        break;
+                }
+            }
+        }
+
+        private void HandleLogin()
+        {
+            Console.Clear();
+            Console.WriteLine("========== LOGIN ==========\n");
+
+            Console.Write("Username: ");
+            string username = Console.ReadLine() ?? string.Empty;
+
+            Console.Write("Password: ");
+            string password = ReadPassword();
+
+            Console.WriteLine();
+            bool success = _authService?.Login(username, password) ?? false;
+
+            Console.WriteLine("\nPress any key to continue...");
+            Console.ReadKey();
+
+            if (success)
+            {
+                RunUserMenu();
+            }
+        }
+
+        private void RunUserMenu()
+        {
+            while (true)
+            {
+                var currentUser = _authService?.GetCurrentUser();
+                if (currentUser == null)
+                    break;
+
+                Console.Clear();
+                Console.WriteLine($"========== USER MENU ==========\n");
+                Console.WriteLine($"Welcome, {currentUser.Username}!");
+                Console.WriteLine("1. View Users");
+                Console.WriteLine("2. Send Message");
+                Console.WriteLine("3. Inbox");
+                Console.WriteLine("4. Conversation History");
+                Console.WriteLine("0. Logout\n");
+                Console.Write("Choose: ");
+
+                var choice = Console.ReadLine();
+
+                switch (choice)
+                {
+                    case "0":
+                        _authService?.Logout();
+                        Console.WriteLine("\nLogged out successfully. Press any key...");
+                        Console.ReadKey();
+                        return;
+                    default:
+                        Console.WriteLine("\nInvalid option. Press any key...");
                         Console.ReadKey();
                         break;
                 }

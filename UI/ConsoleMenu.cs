@@ -9,10 +9,12 @@ namespace ConsoleChat.UI
     public class ConsoleMenu
     {
         private readonly IAuthService? _authService;
+        private readonly IUserService? _userService;
 
-        public ConsoleMenu(IAuthService authService)
+        public ConsoleMenu(IAuthService authService, IUserService userService)
         {
             _authService = authService;
+            _userService = userService;
         }
 
         public void RunMainMenu()
@@ -92,6 +94,9 @@ namespace ConsoleChat.UI
 
                 switch (choice)
                 {
+                    case "1":
+                        HandleViewUsers();
+                        break;
                     case "0":
                         _authService?.Logout();
                         Console.WriteLine("\nLogged out successfully. Press any key...");
@@ -103,6 +108,33 @@ namespace ConsoleChat.UI
                         break;
                 }
             }
+        }
+
+        private void HandleViewUsers()
+        {
+            Console.Clear();
+            Console.Clear();
+            Console.WriteLine("========== USERS ==========\n");
+            var currentUser = _authService?.GetCurrentUser();
+            var allUsers = _userService?.GetAllUsers();
+
+            var otherUsers = allUsers?.Where(u => u.UserId != currentUser?.UserId).ToList();
+
+            if (!otherUsers?.Any() ?? true)
+            {
+                Console.WriteLine("No other users registered yet.");
+            }
+            else
+            {
+                for (int i = 0; i < otherUsers?.Count; i++)
+                {
+                    Console.WriteLine($"{i + 1}. {otherUsers[i].Username}");
+                }
+            }
+
+            Console.WriteLine("\n0. Back");
+            Console.Write("\nChoose: ");
+            Console.ReadLine();
         }
 
         private void HandlerRegister()
@@ -122,7 +154,6 @@ namespace ConsoleChat.UI
             Console.WriteLine("\nPress any key to continue...");
             Console.ReadKey();
         }
-
         private string ReadPassword()
         {
             string password = "";

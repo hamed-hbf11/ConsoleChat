@@ -10,7 +10,9 @@ namespace ConsoleChat
         {
             var users = new List<User>();
             var authservice = new AuthService(users);
-            var menu = new ConsoleMenu(authservice);
+            var userService = new UserService(users);
+
+            var menu = new ConsoleMenu(authservice, userService);
 
             menu.RunMainMenu();
         }

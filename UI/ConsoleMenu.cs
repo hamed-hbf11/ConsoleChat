@@ -102,6 +102,9 @@ namespace ConsoleChat.UI
                     case "2":
                         HandleSendMessage();
                         break;
+                    case "3":
+                        HandleInbox();
+                        break;
                     case "0":
                         _authService?.Logout();
                         Console.WriteLine("\nLogged out successfully. Press any key...");
@@ -221,6 +224,37 @@ namespace ConsoleChat.UI
             }
 
             Console.WriteLine("\nPress any key to continue...");
+            Console.ReadKey();
+        }
+        private void HandleInbox()
+        {
+            Console.Clear();
+            Console.WriteLine("========== INBOX ==========\n");
+
+            var currentUser = _authService?.GetCurrentUser();
+            if (currentUser == null)
+                return;
+
+            var inboxMessages = _messageService?.GetInbox(currentUser.UserId);
+            if (!inboxMessages?.Any() ?? true)
+            {
+                Console.WriteLine("No messages in your inbox.");
+            }
+            else
+            {
+                foreach (var msg in inboxMessages)
+                {
+                    var sender = _userService?.GetUserById(msg.SenderId);
+                    string senderName = sender != null ? sender.Username : "Unknown User";
+
+                    Console.WriteLine($"From: {senderName}");
+                    Console.WriteLine($"Time: {msg.Timestamp:yyyy-MM-dd HH:mm}");
+                    Console.WriteLine($"Message: {msg.Content}");
+                    Console.WriteLine(new string('-', 30));
+                }
+            }
+
+            Console.WriteLine("\nPress any key to return to user menu...");
             Console.ReadKey();
         }
     }
